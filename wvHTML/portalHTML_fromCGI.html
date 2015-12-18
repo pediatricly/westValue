@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+      <head>
+              <meta charset="utf-8">
+              <meta name="description" content="The CGI Portal into Qualtrics for westValue, UCSF Pediatrics new feedback and evaluation system">
+              <link rel="stylesheet" href="$cssSheet">
+
+	      <title>westValue - Feedback Portal for $FName $LName</title>
+      </head>
+
+      <body>
+		<header>
+		<figure><img src = "http://www.pediatricly.com/images/westPic.jpg" width = "20%" alt = "westValue Logo"/></figure>
+		<h1>Welcome to westValue!</h1>
+		</header>
+
+		<details><summary>What's an EPA?</summary><p>The new, coolest things in medical training feedback are <a href="https://www.abp.org/entrustable-professional-activities-epas">Entrustable Professional Activities (EPAs)</a>. 17 EPAs cover broad domains of pediatrics. E.g., EPA #3 is "care of the well newborn". The idea is that trainees gradually learn to be entrusted with all these activities independently. westValue uses <i>very short</i> Qualtrics surveys to track trainee progress.</p></details>
+
+		<main><h2>(Step 1/3) Right Resident?</h2>
+<p>Links on this page have been customized for <strong>$FName $LName</strong>. 
+<ul><li>If that is whom you want to evaluate, great! Please proceed.</li>
+<li>If you are looking for <i>another trainee</i>, please go to the <a href="http://www.pediatricly.com/cgi-bin/westValue/landingpage.html">Landing Page</a></li></ul></p>
+
+<h2>(Step 2/3) Pick the Rotation</h2>
+<p>We have customized Qualtrics links by rotation for 2 reasons.<br>
+<ol><li>We want residents to know in what setting feedback was received.</li>
+<li>We want residents to get feedback spread across all the EPAs while making it very easy for you to pick a relevant one. (e..g, EPA 3 for Well Baby but not Adol.)</li></ol></p>
+
+<h3>Today's Rotation</h3>
+<p>$currRotHTML</p>
+
+<h3>Continuity Clinic</h3>
+<ul><li>If this is feedback from <a href ="$cccUrl">Continuity Clinic, click here</a>.</li></ul>
+
+<h3>Other Rotations</h3>
+<p>Here are the all the other rotations for feedback:<br>
+(Remember, all these are specific for $FName $LName)<br>
+
+<ul>
+	$otherRotLinks
+</ul></p>
+
+</main>
+              <footer><br><br><br>This is the prototype westValue CGI Portal, version $version.<br>
+              Developed by Mike in Nov 2015. Ping him for feedback &amp suggestions.
+              </footer>
+              </body>
+              </html>
+
