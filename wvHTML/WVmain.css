@@ -1,0 +1,63 @@
+html {
+    background-color: rgb(1, 73, 105);
+}
+
+header {
+    text-align: center;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: rgb(255, 250, 240);
+    font-family: serif;
+}
+
+h3, h4, h5, h6 {
+    padding-left: 2%;
+    padding-right: 2%;
+}
+
+details {
+    padding-left: 5%;
+    padding-right: 5%;
+}
+
+
+strong {
+    color: rgb(221, 29, 67);
+    font-size: 150%;
+}
+
+body {
+    margin: 0 auto;
+    padding: 1em 2em 4em;
+    max-width: 800px;
+    font-family: sans-serif;
+    color: rgb(252, 177, 93);
+}
+
+p {
+    width: 91%;
+    padding-left: 4%;
+    padding-right: 4%;
+}
+
+ol, ul {
+    line-height: 185%;
+    margin-left: 8%;
+    margin-right: 8%;
+}
+
+a {
+    color: rgb(255, 235, 205);
+    text-decoration: none;
+    padding: 0.5%;
+}
+
+a:hover {
+    background: grey;
+}
+
+footer {
+    margin-top: 5%;
+    text-align: center;
+}
