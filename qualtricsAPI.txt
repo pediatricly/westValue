@@ -1,0 +1,44 @@
+Root URL
+https://survey.qualtrics.com/WRAPI/ControlPanel/api.php
+
+User ID
+UR_bw7l9gTWA3LKOix
+
+Organization ID
+ucsf
+
+API Token
+OWumESmXe4g9TclwcGiUGttQqmbLq9LrJHBaYFtu
+
+My Library
+UR_bw7l9gTWA3LKOix
+
+Global Library
+GR_6G4LaoiroGxHH12
+
+
+Surveys:
+
+Test
+SV_4VBk5z7AxWdK6EZ
+
+WestVal_Tinker_02
+SV_eXRZRRzzetZzIj3
+
+
+Sample
+https://new.qualtrics.com/WRAPI/ControlPanel/api.php?Request=getUserInfo&User=apiuser&Token=lksjdfJdJklajdf3asdae3&Format=XML
+
+https://new.qualtrics.com/WRAPI/ControlPanel/api.php?Request=getUserInfo&User=UR_bw7l9gTWA3LKOix&Token=OWumESmXe4g9TclwcGiUGttQqmbLq9LrJHBaYFtu&Format=XML
+
+
+
+
+Google QuickStart API
+MqQLihVXCfMmKNbavZ-LVuK8rg-RUqIZu
+
+Client ID
+187021251222-h87i4cpn0qvcl2gc8ftp8c7q87kambfb.apps.googleusercontent.com
+
+Client Secret
+rQJ5mLxoQf9ix3IwA3cwk_W4

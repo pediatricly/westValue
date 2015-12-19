@@ -16,17 +16,6 @@ h3, h4, h5, h6 {
     padding-right: 2%;
 }
 
-details {
-    padding-left: 5%;
-    padding-right: 5%;
-}
-
-
-strong {
-    color: rgb(221, 29, 67);
-    font-size: 150%;
-}
-
 body {
     margin: 0 auto;
     padding: 1em 2em 4em;
@@ -35,10 +24,56 @@ body {
     color: rgb(252, 177, 93);
 }
 
-p {
+.intro {
+    text-align: center;
+}
+
+details {
+    display: inline-block;
+    padding-left: 5%;
+    padding-right: 5%;
+    border: 1px solid white;
+}
+
+details p {
+    padding-left: 1.5em;
+    text-indent: -1.5em;
+    text-align: left;
+}
+
+strong {
+    color: rgb(221, 29, 67);
+    font-size: 150%;
+}
+
+#main p {
     width: 91%;
     padding-left: 4%;
     padding-right: 4%;
+}
+
+#namelist {
+    display: table;
+    font-size: 110%;
+}
+
+.pgyClass {
+    align-self: center;
+    vertical-align: top;
+    display: block;
+/*    display: table-cell;*/
+    float:left;
+    min-width:  250px;
+    width: 32%;
+    margin: 0.4%;
+    min-height: 1100px;
+    /* background: black;
+    */
+}
+
+.pgyClass h2 {
+    text-align: center;
+    color: rgb(255, 140, 0);
 }
 
 ol, ul {
@@ -47,10 +82,13 @@ ol, ul {
     margin-right: 8%;
 }
 
+#namelist li {
+/*    padding: 2%;*/
+}
+
 a {
     color: rgb(255, 235, 205);
     text-decoration: none;
-    padding: 0.5%;
 }
 
 a:hover {
@@ -59,5 +97,37 @@ a:hover {
 
 footer {
     margin-top: 5%;
+    padding: 2%;
     text-align: center;
+    clear: left;
+}
+
+@media only screen and (max-width: 400px) {
+    body {
+        padding: inherit;
+/*        background: black;*/
+        font-size: 18px;
+    }
+    
+    details {
+        display: none;
+/*        visibility: hidden;*/
+    }
+    
+    ol, ul {
+        margin: inherit;
+        
+    }
+    
+    .pgyClass {
+        display: inline;
+        width: 95%;
+        align-content: stretch;
+    }
+    .pgyClass li {
+        padding: 1%;
+    }
+    footer {
+        font-size: 80%;
+    }
 }

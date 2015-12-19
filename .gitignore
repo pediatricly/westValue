@@ -1,0 +1,6 @@
+*.csv
+*.jpg
+*.jpeg
+*.pyc
+.rope*
+*.swp
