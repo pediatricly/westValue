@@ -51,6 +51,7 @@ except: version = 'EPApicker2'
 # Pre-set the Qualtrics url base
 qualBase = 'https://ucsf.co1.qualtrics.com/SE/'
 ResDirectory = 'http://www.pediatricly.com/cgi-bin/westValue/ResidentDirectory.py'
+portal = 'http://www.pediatricly.com/cgi-bin/westValue/portal4.py'
 cssSheet = 'http://www.pediatricly.com/westVal/WVmain.css'
 """
 The URL into this needs:
@@ -93,6 +94,8 @@ try:
 
     residentD = {'SID' : qualID, 'AmionName' : AmionName, 'LName' : LName, 'FName' : FName,
                 'pgy' : pgy, 'Rotation' : Rotation}
+    backD = {'AmionName' : AmionName, 'qualID' : qualID}
+    linkBack = portal + '?' + urllib.urlencode(backD)
 
 ###################################################################
 ### Read the CSV mapping of milestones to EPA from active dir
@@ -223,8 +226,9 @@ try:
     templateFH = open('EPApickerHTMLtemplate.html', 'r')
     htmlTemplate = templateFH.read()
 
-    templateVars = dict(cssSheet=cssSheet, FName=FName, LName=LName,
-                        Rotation=Rotation, suggestFinalHTML=suggestFinalHTML,
+    templateVars = dict(cssSheet=cssSheet, linkBack=linkBack, FName=FName,
+                        LName=LName, Rotation=Rotation,
+                        suggestFinalHTML=suggestFinalHTML,
                         restEPAurlHTML=restEPAurlHTML, version=version,
                         ResDirectory=ResDirectory)
 
