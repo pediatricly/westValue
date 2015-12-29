@@ -342,7 +342,7 @@ try:
         currRotHTML += ('Amion lists %s on <strong>%s</strong> today.<br>\n' %
             (residentD['FName'], currRotName))
         currRotHTML += ('<ul><li><div id="todayLink"><a href ="%s">Click here to give feedback for %s</a>.</li></ul></div>\n' %
-                        (currRotName, currRotUrl))
+                        (currRotUrl, currRotName))
     except:
         currRotHTML += (("Sorry! Amion does't have %s listed today. (This happens on days off, electives, etc.) But fear not!<br>\n") %
                         residentD['FName'])
