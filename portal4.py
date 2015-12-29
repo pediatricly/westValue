@@ -341,7 +341,7 @@ try:
         #    ['Milestone', currMilestone], urlSuffix)
         currRotHTML += ('Amion lists %s on <strong>%s</strong> today.<br>\n' %
             (residentD['FName'], currRotName))
-        currRotHTML += ('<ul><li><div id="todayLink">To give feedback for %s, <a href ="%s">click here to pick an EPA</a>.</li></ul></div>\n' %
+        currRotHTML += ('<ul><li><div id="todayLink"><a href ="%s">Click here to give feedback for %s</a>.</li></ul></div>\n' %
                         (currRotName, currRotUrl))
     except:
         currRotHTML += (("Sorry! Amion does't have %s listed today. (This happens on days off, electives, etc.) But fear not!<br>\n") %

@@ -213,8 +213,8 @@ try:
         '''
     else:
         suggestTemplate = '''
-        <b>Sorry!</b> We don't currently have suggested EPAs for <strong>$Rotation</strong> - our bad.<br>
-        Please choose any EPA from the links below and, if you get a chance, please email Marcela to let her know which rotation caused the issue so we can fix it.
+        <div id="sorry">Sorry!</div> We don't currently have suggested EPAs for <strong>$Rotation</strong> - our bad.<br>
+        Please choose any suitable EPA from the links below.
         '''
 
     suggestFinalHTML = Template(suggestTemplate).safe_substitute(
