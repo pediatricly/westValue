@@ -21,6 +21,7 @@ img {
     float: left;
     line-height: 263px;
     vertical-align: middle;
+    min-width: 130px;
 }
 
 h1 {
@@ -61,15 +62,19 @@ summary {
     font-weight: bold;
 }
 
-strong {
-    color: rgb(221, 29, 67);
-    font-size: 150%;
+main, details {
+    font-size: 18px;
 }
 
 main p {
     width: 91%;
     padding-left: 4%;
     padding-right: 4%;
+}
+
+strong {
+    color: rgb(221, 29, 67);
+    font-size: 150%;
 }
 
 #namelist {
@@ -123,7 +128,7 @@ footer {
 }
 
 /* Small screen take over */
-@media only screen and (max-width: 400px) {
+@media only screen and (max-width: 650px) {
     body {
         padding: inherit;
 /*        background: black;*/
@@ -133,6 +138,10 @@ footer {
     details {
         display: none;
 /*        visibility: hidden;*/
+    }
+    
+    p {
+        padding: inherit;
     }
     
     ol, ul {

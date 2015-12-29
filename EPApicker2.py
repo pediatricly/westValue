@@ -20,6 +20,7 @@ back to v2 to spare the links.)
 
 """
 
+#''' #Comment out this line to turnon CGI
 ################################################################################
 #####   CGI Setup
 #####   from the qualcgi1.py file. Put this first so you capture errors
@@ -33,42 +34,23 @@ cgitb.enable()
 # entering code into input fields
 # Create instance of FieldStorage
 form = cgi.FieldStorage()
-
+#''' #Comment out this line to turnon CGI
 #===============================================================================
 import csv
 import os.path
+import urllib
 from string import Template
 
 try: version = os.path.basename(__file__)
 except: version = 'EPApicker2'
 
 ###################################################################
-### Setup the Qulatrics URL generation
-###################################################################
-def urlGen2(base, stubList, EPA, suffix):
-# Loop to format the URL with form data 'url?varName=_var_&var2=_var2_'
-	dataList = []
-	for item in stubList:
-		dataList.append(item)
-	dataList.append(EPA)
-
-	for urlVar, varName in dataList:
-		# print urlVar
-		suffix = suffix + urlVar + '=' + str(varName) + '&'
-
-	if suffix[-1] == '&': suffix = suffix[:-1] # Clip off the last &
-	urlOut = base + suffix # Assemble the final custom Qualtrics URL
-	return urlOut
-
-###################################################################
 ### Define Globals Before Main try block
 ####################################################################
 
 # Pre-set the Qualtrics url base
-qualbase = 'https://ucsf.co1.qualtrics.com/SE/?SID=SV_1ST78nRrIv74UaF' # It looks like the base could be longer but
-# keeping it short seems safer
+qualBase = 'https://ucsf.co1.qualtrics.com/SE/'
 ResDirectory = 'http://www.pediatricly.com/cgi-bin/westValue/ResidentDirectory.py'
-
 cssSheet = 'http://www.pediatricly.com/westVal/WVmain.css'
 """
 The URL into this needs:
@@ -82,7 +64,10 @@ http://pediatricly.com/cgi-bin/westValue/EPApicker2.py?Rotation=TCU&Milestone=TC
 ####################################################################
 
 try:
+# Indent de-indent starting this line to turn off the CGI try
 # Get names from the URL. These are set in portal#.py
+    #''' #Comment this section to turn off CGI
+    AmionName = form.getvalue('AmionName')
     LName = form.getvalue('LName')
     FName = form.getvalue('FName')
     pgy = form.getvalue('pgy')
@@ -91,34 +76,33 @@ try:
 
 # Store the Qualtrics link custom suffix
     qualID = form.getvalue('qualID')
+    #''' #Comment this section to turn off CGI
 
     """
+    AmionName = 'Neely-J'
     LName = "Neely"
     pgy = 3
     FName = "Jessica"
-    Rotation = "SFN"
-    Milestone = "SFN"
-# qualID = "SE?Q_DL=4NiHEv4rRV75KUR_2rxLPgxEvdzAXOJ_MLRP_4IUOlBssXvaqJ8h&Q_CHL=gl"
+    Rotation = "SFN3"
+    Milestone = "SFN3"
+    qualID = "SV_8CwPK9m2RELdyS1"
     """
+
     if LName == None or qualID == None or FName == None or Rotation == None or Milestone == None:
         raise NameError
-    cgiError = 0
 
-# Temporary measure to get the old Qualtrics link going, careful, this overwrites the URL input
-    # qualID = "SE?Q_DL=4NiHEv4rRV75KUR_2rxLPgxEvdzAXOJ_MLRP_4IUOlBssXvaqJ8h&Q_CHL=gl"
-
-    urlBase = qualbase # + qualID
-    urlSuffix = '&'
-    rotDataListStub = ([['LName', LName], ['FName', FName], ['pgy', pgy],
-                        ['Rotation', Rotation]])
+    residentD = {'SID' : qualID, 'AmionName' : AmionName, 'LName' : LName, 'FName' : FName,
+                'pgy' : pgy, 'Rotation' : Rotation}
 
 ###################################################################
 ### Read the CSV mapping of milestones to EPA from active dir
 ###################################################################
-    milestonesList = [] # Holds all the Milestone rows with X for relevant EPAs
+    milestonesList = []
+# Holds all the Milestone rows with X for relevant EPAs
     headers = []
+# First row of the Milestone_Map:
+# ['Milestone Map Label', 'GROUP', 'EPA1',...]
     csvIn = 'Milestone_Map.csv'
-
     with open(csvIn, 'rb') as csvfile:
         csvreader = csv.reader(csvfile, quotechar='"')
         #quotechar sets the char Python uses to ignore commas within a cell
@@ -137,6 +121,10 @@ try:
     '''
 
     headedMilestones = [] # This is the row from Milestone_Map for CGI Milestone
+# List of lists corresponding to the row of blanks & Xs from Milestone_Map for
+# the CGI milestone:
+# [['Milestone Map Label', 'SFN3'], ['GROUP', '3'], ['EPA1', ''], ['EPA2', ''],
+# ['EPA3', 'X'],...]
     for row in milestonesList:
         if row[0] == Milestone:
             for i, cell in enumerate(row):
@@ -149,23 +137,34 @@ try:
     '''
 
     descriptionList = []
+# List of lists with EPA # string & description string
+# [['1', "Provide consult...'], ['2', 'Provide rec...]]
     csvIn2 = 'EPA_descriptions.csv'
-
     with open(csvIn2, 'rb') as csvfile:
         csvreader = csv.reader(csvfile, quotechar='"')
         for row in csvreader:
             if row[0] != 'EPA Number':
                 descriptionList.append(row)
 
-# print descriptionList
 
+    activeEPAs = []
+# List ['3', '4'...] of active EPA numbers
+    csvIn3 = 'activeEPAs.csv'
+    with open(csvIn3, 'rb') as csvfile:
+        csvreader = csv.reader(csvfile, quotechar='"')
+        for row in csvreader:
+            if row[1] == 'X' or row[1] == 'x':
+                activeEPAs.append(row[0])
 
-    epaList = [] # This is the list of suggested EPAs based on CGI Milestone var
+    epaList = []
+# This is the list of suggested EPAs based on CGI Milestone var
+# ['3', '5', '15',...]
     for row in headedMilestones:
-        if row[1] == 'X':
+        if row[1] == 'X' or row[1] == 'x':
             epaNum = row[0]
             epaNum = epaNum[3:]
-            epaList.append(epaNum)
+            if epaNum in activeEPAs:
+                epaList.append(epaNum)
     '''
     print "epaList:"
     print epaList
@@ -178,26 +177,28 @@ try:
     suggestEPAurlHTML = ""
     restEPAurlHTML = ""
 
+# Build HTML for the suggested EPAs using epaList
     for epa in epaList:
         description = ''
         for item in descriptionList:
             if item[0] == epa:
                 description = item[1]
-        epaUrl =  urlGen2(urlBase, rotDataListStub, ['EPA', epa], urlSuffix)
+        residentD1 = residentD
+        residentD1['EPA'] = epa
+        epaUrl =  qualBase + '?' + urllib.urlencode(residentD1)
         suggestEPAurlHTML += '<li><a href="%s">EPA #%s: %s</a></li>' % (epaUrl, epa, description)
 
-    for group in headers:
-        # first = group[0]
-        if group[:3] == 'EPA':
-            epa = group[3:]
-            if epa not in epaList:
-                description = ''
-                for item in descriptionList:
-                    if item[0] == epa:
-                        description = item[1]
-        # print "EPA %s description has to go here %s<br>" % (epa, description)
-                epaUrl =  urlGen2(urlBase, rotDataListStub, ['EPA', epa], urlSuffix)
-                restEPAurlHTML += '<li><a href="%s">EPA #%s: %s</a></li>' % (epaUrl, epa, description)
+# Build HTML for the rest of the active EPAs using activeEPAs
+    for epa in activeEPAs:
+        if epa not in epaList:
+            description = ''
+            for item in descriptionList:
+                if item[0] == epa:
+                    description = item[1]
+            residentD1 = residentD
+            residentD1['EPA'] = epa
+            epaUrl =  qualBase + '?' + urllib.urlencode(residentD1)
+            restEPAurlHTML += '<li><a href="%s">EPA #%s: %s</a></li>' % (epaUrl, epa, description)
 
 ###################################################################
 ### Use the string.Template to store custom HTML as a big string
@@ -240,18 +241,18 @@ try:
 # Need this header to start off the html file
     print finalHTML
 
+# Indent de-indent ending this line to turn off the CGI try
+
     """
     CAREFUL - qualID is itself a URL with encoded variables and so it contains =?&
     It seems to work ok despite this but worth keeping an eye on.
     """
 
-
 except NameError:
-    cgiError = 1
-
     cgiErrTemplateFH = open('epaCGIerrTemplate.html', 'r')
     cgiErrTemplate = cgiErrTemplateFH.read()
     print "Content-type:text/html\r\n\r\n"
     print Template(cgiErrTemplate).safe_substitute(version=version,
-                                                   cssSheet=cssSheet,
-                                                   ResDirectory=ResDirectory)
+                                                    cssSheet=cssSheet,
+                                                    ResDirectory=ResDirectory)
+#End

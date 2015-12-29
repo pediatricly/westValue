@@ -31,13 +31,15 @@ populates HTML
 
 Major Versions:
 v1 - 9dec15
-
+- No name change but 28dec15, revamped the var flow to harmonize / simplify
+using AmionName throughout & prepping for live Qualtrics
 """
 #===============================================================================
 import re
 import csv
 import os.path
 from string import Template
+import urllib
 # import os, sys
 
 ###################################################################
@@ -47,7 +49,7 @@ try: version = os.path.basename(__file__)
 except: version = 'ResidentDirectory'
 
 csvIn = 'Resident_Clean.csv'
-AmionNameHeader = 'AmionName' # csv reader looks for this to find the header row
+AmionName = 'AmionName' # csv reader looks for this to find the header row
 # This tolerates a miss-sorted sheet
 LName = 'LName'
 FName = 'FName'
@@ -64,8 +66,8 @@ residentsTableClean = []
 urlBase = 'http://www.pediatricly.com/cgi-bin/westValue/portal4.py'
 qualID = 'qualID'
 temp = 'temp'
-#This will need a look up or preset Qualtrics link eventually
-urlVars = [AmionF, FName, AmionL, pgy, qualID]
+# This leaves a placeholder in case we switch to panels (unique URLs qResident)
+urlVars = [AmionName, qualID]
 
 urlList = []
 links1 = ''
@@ -97,7 +99,7 @@ try:
 
     for i, col in enumerate(headers):
         if 'Amion' in col or 'amion' in col:
-            headersDict[AmionNameHeader] = i
+            headersDict[AmionName] = i
         elif 'Last' in col or 'last' in col:
             headersDict[LName] = i
         elif 'First' in col or 'first' in col:
@@ -119,7 +121,7 @@ try:
     fh = open(csvIn, 'rb')
     csvreader2 = csv.reader(fh, quotechar=' ')
     for row in csvreader2:
-        if AmionNameHeader in row: pass
+        if AmionName in row: pass
         else:
             entry = {}
             for head in headersDict:
@@ -134,13 +136,14 @@ try:
         if resident[pgy] == Chief: pass
         else:
             for key in resident:
-                if key == AmionNameHeader:
+                if key == AmionName:
                     cleanAmion = re.sub(r'[=\*\+]', '', resident[key])
-                    newEntry[AmionNameHeader] = cleanAmion
-                    AmionLi = re.match(r'^\w+', cleanAmion).group()
-                    newEntry[AmionL] = AmionLi
-                    AmionFi = re.search(r'-(\w)', cleanAmion).group(1)
-                    newEntry[AmionF] = AmionFi
+                    newEntry[AmionName] = cleanAmion
+                    #Following lines are from the split AmionL AmionF era
+                    #AmionLi = re.match(r'^\w+', cleanAmion).group()
+                    #newEntry[AmionL] = AmionLi
+                    #AmionFi = re.search(r'-(\w)', cleanAmion).group(1)
+                    #newEntry[AmionF] = AmionFi
                 elif key == pgy:
                     cleanPGY = re.sub('\D','', resident[key])
                     newEntry[pgy] = cleanPGY
@@ -149,23 +152,23 @@ try:
             residentsTableClean.append(newEntry)
 
 #print residentsTableClean
-    '''
-    Might want to write that residentsTableClean into a file for recycling
-    '''
+# [{'qualID':'temp','AmionName':'Wu-L','LName':'Wu'...},{...}]
+# Might want to write that residentsTableClean into a file for recycling
+
 ###################################################################
 ### Generate custom urls to portal4.py
 ### Output strings by pgy of html list element links
 ###################################################################
 # linkList = []
+# Sort residents by pgy then alpha by LName
     residentsTableClean = sorted(residentsTableClean, key=lambda k: (k[pgy], k[LName]))
 
     for resident in residentsTableClean:
-        suffix = '?'
+        urlDict ={}
         for key in resident:
             if key in urlVars:
-                suffix = suffix + key + '=' + resident[key] + '&'
-        suffix = suffix[:-1]
-        url = urlBase + suffix
+                urlDict[key] = resident[key]
+        url = urlBase + '?' + urllib.urlencode(urlDict)
         urlList.append(url)
         linkI = '<li><a href ="%s">%s %s</a></li>\n' % (url, resident[FName],
                                                         resident[LName])
@@ -174,6 +177,7 @@ try:
         if resident[pgy] == str(1): links1 += linkI
         elif resident[pgy] == str(2): links2 += linkI
         elif resident[pgy] == str(3): links3 += linkI
+
 
 ###################################################################
 ### Generate custom urls to portal4.py
@@ -208,7 +212,6 @@ except:
 # cgiErrTemplate = cgiErrTemplateFH.read()
     print 'Content-type:text/html\r\n\r\n'
     print '<h1>Oops!</h1>'
-    print 'Something went horribly wrong with westValue. <b>Sorry!</b><br>'
+    print 'Something just went horribly wrong with westValue. <b>Sorry!</b><br>'
     print 'Please let Mike or Marcela know what led up to this screen.'
-
 

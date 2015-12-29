@@ -10,20 +10,32 @@
 
       <body>
 		<header>
-		<figure><img src = "http://www.pediatricly.com/images/westPic.jpg" width = "20%" alt = "westValue Logo"/></figure>
-		<h1>Welcome to westValue - The Resident Directory!</h1>
-		</header>
-          <p>Here you can start feedback for any resident in the pediatrics program.<br>
-          Links are alphabetical by PGY class.</p>
+		<figure><img src = "http://www.pediatricly.com/images/westPic.jpg" width = "20%" alt = "westValue Logo" id="mainIcon"/></figure>
+            <h1>Welcome to westValue!</h1>
+
+		<details><summary>What is an EPA?</summary><p>The new, coolest things in medical training feedback are 
+              <a href="https://www.abp.org/entrustable-professional-activities-epas">Entrustable Professional Activities (EPAs)</a>.</p> 
+              <p>17 EPAs cover broad domains of pediatrics. E.g., EPA #3 is "care of the well newborn".</p>
+              <p>The idea is that trainees gradually learn to be entrusted with all these activities independently.</p> 
+              <p>westValue uses <i>very short</i> Qualtrics surveys to track trainee progress across the EPAs.</p></details>
+</header>
           
-          <h2>PGY-3</h2>
+          <main>
+          <div id='namelist'><div class='pgyClass' id='pgy3'>
+              <h2>PGY-3</h2>
           <ul>$links3</ul>
-          
+          </div>
+              
+          <div class='pgyClass' id='pgy2'>
           <h2>PGY-2</h2>
           <ul>$links2</ul>
+          </div>
           
+          <div class='pgyClass' id='pgy1'>
           <h2>PGY-1</h2>
           <ul>$links1</ul>
+              </div>
+              </div>
           
           </main>
               <footer>This is the prototype westValue - Resident Directory.<br>

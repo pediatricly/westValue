@@ -62,40 +62,14 @@ portalHTMLtemplate_fromCGI.html (done in a .html to use color-cued editing)
 
 portal
 v4 - 2dec15 - identical to qualCGIscrape4, just a name change fork
-"""
-
-"""
-Resources:
-Tutorial 1: https://www.youtube.com/watch?v=eRSJSKG4mDA
-The actual documentation: http://docs.python-requests.org/en/latest/user/quickstart/
-
-"""
-
-"""
-What I'm working on - the Amion HTML stuff:
-
-Truncated, the full detail is still in scraper4
--------------------------------
-	<form name=AmionLogin action="cgi-bin/ocs" method=post>
-
-These are the login network data:
----------------------------------
-General:
-Remote Address:204.10.66.120:80
-Request URL:http://amion.com/cgi-bin/ocs
-Request Method:POST
-Status Code:200 OK
-
-Form Data:
-Login:ucsfpeds
-
+28dec15 - same name but substantial revision to simplify the url names. Switches
+to using AmionName through the system
 """
 
 #################################################################################
 #####   CGI Setup
 #####   from the qualcgi1.py file. Put this first so you capture errors
 #################################################################################
-
 import cgi, cgitb
 # Debugging - has the webserver print a traceback instead of just a page
 # not found error if there's an error in the code
@@ -109,9 +83,8 @@ import requests
 import re
 import csv
 import os.path
+import urllib
 from string import Template
-# import os, sys
-
 
 ###################################################################
 ### Define Globals Before Main try block
@@ -119,14 +92,13 @@ from string import Template
 try: version = os.path.basename(__file__)
 except: version = 'portal4'
 
-# Temporary measure to get the old Qualtrics link going, careful, this overwrites the URL input
-# qualID = "SE?Q_DL=4NiHEv4rRV75KUR_2rxLPgxEvdzAXOJ_MLRP_4IUOlBssXvaqJ8h&Q_CHL=gl"
+qualDefault = 'SV_8CwPK9m2RELdyS1'
 
 EPApicker = 'http://www.pediatricly.com/cgi-bin/westValue/EPApicker2.py'
 ResDirectory = 'http://www.pediatricly.com/cgi-bin/westValue/ResidentDirectory.py'
 
 fieldnames = ['AmionRot', 'cleanRotName', 'Milestone Map Label']
-
+residentD = {}
 cccMilestone = 'CCC' # Remembers the milestone group name for continuity clinic
 rotationsDict = {}
 
@@ -137,63 +109,152 @@ cccName = ''
 resRotList = []
 
 cssSheet = 'http://www.pediatricly.com/westVal/WVmain.css'
-###################################################################
-### Setup the Qulatrics URL generation
-###################################################################
-def urlGen(base, stubList, rot2, milestone2, suffix):
-# Loop to format the URL with form data 'url?varName=_var_&var2=_var2_'
-    dataList = []
-    for item in stubList:
-        dataList.append(item)
-    dataList.append(rot2)
-    dataList.append(milestone2)
+urlBase = EPApicker
+urlSuffix = '?'
+urlVars = ['LName', 'AmionName', 'FName', 'pgy']
+urlDict = {}
 
-    for urlVar, varName in dataList:
-        # print urlVar
-        suffix = suffix + urlVar + '=' + str(varName) + '&'
+currRot = 'Other' # Initialize in the global namespace
+###################################################################
+### Read in the Resident_Clean.csv
+### Does this with a function to keep column header var names out of the global
+###################################################################
+def Resident_Clean_Reader(csvFile):
+    AmionName = 'AmionName' # csv reader looks for this to find the header row
+# This tolerates a miss-sorted sheet
+    LName = 'LName'
+    FName = 'FName'
+    pgy = 'pgy'
+    Email = 'Email'
+    AmionF = 'AmionF'
+    AmionL = 'AmionL'
+    Chief = 'Chief Resident'
+    headers = [] # Initialize, populated by reading the csv
+    headersDict = {}
 
-    if suffix[-1] == '&': suffix = suffix[:-1] # Clip off the last &
-    urlOut = base + suffix # Assemble the final custom Qualtrics URL
-    return urlOut
-#####################################################################
+    residentsTable = []
+    residentsTableClean = []
+
+    '''
+    The following loops find whichever line of the csv contains the headers
+    It searches for key text (eg 'first') and stores the column numbers where those
+    are found. The next loop utilizes these to get the data organized right.
+    This combo, while cumbersome, gives standardized var names & tolerates missorted
+    csv and csv with extra columns without storing that info.
+    '''
+    fh = open(csvFile, 'rb')
+    csvreader = csv.reader(fh, quotechar=' ')
+    for row in csvreader:
+        if 'AmionName' in row:
+            headers = row
+    fh.close()
+
+    for i, col in enumerate(headers):
+        if 'Amion' in col or 'amion' in col:
+            headersDict[AmionName] = i
+        elif 'Last' in col or 'last' in col:
+            headersDict[LName] = i
+        elif 'First' in col or 'first' in col:
+            headersDict[FName] = i
+        elif 'Category' in col or 'category' in col:
+            headersDict[pgy] = i
+        elif 'Email' in col or 'email' in col:
+            headersDict[Email] = i
+        else: pass
+
+
+    '''
+    The following loop creates a list of dicts. Each dict is a resident.
+    Each key, value pair is an item from headersDict and its corresponding value,
+    respectively.
+    data = list(csv.DictReader(csvfile)) #This works but keeps the non-std col names
+    '''
+    data = []
+    fh = open(csvFile, 'rb')
+    csvreader2 = csv.reader(fh, quotechar=' ')
+    for row in csvreader2:
+        if AmionName in row: pass
+        else:
+            entry = {}
+            for head in headersDict:
+                entry[head] = row[headersDict[head]].strip() #No trailing space
+            residentsTable.append(entry)
+
+    fh.close()
+# print residentsTable
+
+    for resident in residentsTable:
+        newEntry = {}
+        if resident[pgy] == Chief: pass
+        else:
+            for key in resident:
+                if key == AmionName:
+                    cleanAmion = re.sub(r'[=\*\+]', '', resident[key])
+                    newEntry[AmionName] = cleanAmion
+                    #Following lines are from the split AmionL AmionF era
+                    #AmionLi = re.match(r'^\w+', cleanAmion).group()
+                    #newEntry[AmionL] = AmionLi
+                    #AmionFi = re.search(r'-(\w)', cleanAmion).group(1)
+                    #newEntry[AmionF] = AmionFi
+                elif key == pgy:
+                    cleanPGY = re.sub('\D','', resident[key])
+                    newEntry[pgy] = cleanPGY
+                else: newEntry[key] = resident[key]
+            residentsTableClean.append(newEntry)
+    return residentsTableClean
+####################################################################
+
+# Call the above function to output the residentsTableClean
+# [{'LName': 'Wu', 'AmionName': 'Wu-L', 'Email': 'Lynne.Wu@ucsf.edu', 'FName':
+# 'Lynne', 'pgy': '2'}, {...}]
+Resident_Clean = 'Resident_Clean.csv'
+residentsTableClean = Resident_Clean_Reader(Resident_Clean)
+
+####################################################################
 
 """
 The URL into this needs:
 ?AmionL=__&AmionF=__&FName=__&pgy=__&qualID=__
-http://pediatricly.com/cgi-bin/westValue/portal4.py?AmionL=Neely&AmionF=J&FName=Jessica&pgy=3&qualID=temp
+http://pediatricly.com/cgi-bin/westValue/portal4.py?AmionName=Neely-J3&qualID=temp
 """
-"""
+'''
 Hiding these for local debugging:
-"""
+'''
 # Create instance of FieldStorage
 form = cgi.FieldStorage()
 
 
 # Get names from the URL
 try:
-    LName = form.getvalue('AmionL')
-    # except: LName = None
-    AmionF = form.getvalue('AmionF')
-    #except: AmionF = None
-    pgy = form.getvalue('pgy')
-    #except: pgy = None
-    FName = form.getvalue('FName')
-    #FName = None
-
-    # Store the Qualtrics link custom suffix
-    qualID = form.getvalue('qualID')
-    #except: qualID = None
-    if LName == None or AmionF == None or FName == None:
-        raise NameError
-    cgiError = 0
-
     """
     LName = "Neely"
     AmionF = "J"
-    AmionName = LName + '-' + AmionF
     pgy = 3
     FName = "Jessica"
     """
+    #AmionName = 'Neely-J'
+    AmionName = form.getvalue('AmionName')
+    if AmionName == None:
+        raise NameError
+# Store the Qualtrics link custom suffix
+    try: qualID = form.getvalue('qualID')
+    except: pass
+    if qualID == None or qualID == 'temp':
+        qualID = qualDefault
+
+###################################################################
+### Look up the necessary data to pass to EPApicker / Qualtrics
+###################################################################
+
+#This makes residentD the main dict of the active resident's data
+    for residentI in residentsTableClean:
+        if residentI['AmionName'] == AmionName:
+            residentD = residentI
+    for var in urlVars:
+        urlDict[var] = residentD[var]
+    urlDict['qualID'] = qualID
+# urlDict = {'LName': 'Neely', 'AmionName': 'Neely-J', 'FName': 'Jessica', 'pgy': '3'}
+# for use in urlencode
 
 ###################################################################
 ### Read the CSV list from active dir
@@ -209,12 +270,14 @@ try:
             if row[0] != '':
                 if row[0] != fieldnames[0]: # Strip out the header row
                     rotationsDict[row[0]] = (row[1], row[2])
-        # print "Read the initial " + csvIn + "into rotationsDict"
+#print rotationsDict
+# {'Pacific Sr-Nite': ('ICN_Sr', 'CCM-N'), 'PURPLE1-Day':...}
 
     for rotation in rotationsDict:
         tupule = rotationsDict[rotation]
         rotsForLinksDict[tupule[0]] = tupule[1]
-
+#print rotsForLinksDict
+# {'TCU': 'TCU', 'Adolescent': 'ADOL', 'Kaiser_Nursery': 'SFN3',...}
 
 # These lines then look up the "pretty" rotation name for continuity clinic
 # One could probably just hardcode this, but this way the code is robust as long as CCC
@@ -246,20 +309,9 @@ try:
                 resRotList.append(tempList)
     except: pass
 
-    urlBase = EPApicker
-    urlSuffix = '?'
-    rotDataListStub = ([['LName', LName], ['FName', FName], ['pgy', pgy],
-                        ['qualID', qualID]])
-
-    currRot = 'Other' # Initialize in the global namespace
-
-
-
 ###################################################################
 ### Build String Variables to Write HTML
 ###################################################################
-
-
 # Set these locally for html debugging:
 # currRotName = "Well_Baby"
 # currMilestone = "NNN"
@@ -273,7 +325,6 @@ try:
     currRotName = ""
     currMilestone = "Unknown"
 
-    AmionName = LName + '-' + AmionF
     try:
         for resRotPair in resRotList:
             # print resRotPair
@@ -282,31 +333,36 @@ try:
         currTupule = rotationsDict[currRot]
         currRotName = currTupule[0]
         currMilestone = currTupule[1]
-
-        currRotUrl = urlGen(urlBase, rotDataListStub, ['Rotation', currRotName],
-            ['Milestone', currMilestone], urlSuffix)
-
-        currRotHTML += 'Amion lists %s on <strong>%s</strong> today.<br>\n' % (FName, currRotName)
-        currRotHTML += ('<ul><li><b>To give feedback for %s <a href ="%s">click here to pick an EPA</a></li></ul></b>\n'
-                % (currRotName, currRotUrl))
-        # currRotHTML += currRotUrl + '<br>\n' #This is temp output just for debugging
+        urlDictCurr = urlDict
+        urlDictCurr['Rotation'] = currRotName
+        urlDictCurr['Milestone'] = currMilestone
+        currRotUrl = urlBase + '?' + urllib.urlencode(urlDictCurr)
+        #currRotUrl = urlGen(urlBase, rotDataListStub, ['Rotation', currRotName],
+        #    ['Milestone', currMilestone], urlSuffix)
+        currRotHTML += ('Amion lists %s on <strong>%s</strong> today.<br>\n' %
+            (residentD['FName'], currRotName))
+        currRotHTML += ('<ul><li><div id="todayLink">To give feedback for %s, <a href ="%s">click here to pick an EPA</a>.</li></ul></div>\n' %
+                        (currRotName, currRotUrl))
     except:
-        currRotHTML += ("Sorry! Amion does't have %s listed today. (This happens on days off, electives, etc.) But fear not!<br>\n") % FName
+        currRotHTML += (("Sorry! Amion does't have %s listed today. (This happens on days off, electives, etc.) But fear not!<br>\n") %
+                        residentD['FName'])
 
 
-# Build the current & CoC urls
-    currRotUrl = urlGen(urlBase, rotDataListStub, ['Rotation', currRotName],
-    ['Milestone', currMilestone], urlSuffix)
-    cccUrl = urlGen(urlBase, rotDataListStub, ['Rotation', cccName],
-            ['Milestone', cccMilestone], urlSuffix)
+# Build the CoC url
+    urlDictCCC = urlDict
+    urlDictCCC['Rotation'] = cccName
+    urlDictCCC['Milestone'] = cccMilestone
+    cccUrl = urlBase + '?' + urllib.urlencode(urlDictCCC)
 
 # Create a long html-format string of the other (non-current/CoC) links
     otherRotLinks = ""
     for rotation in sorted(rotsForLinksDict):
         # print 'Rotation: "%s" Milestone: "%s" <br>' % (rotation, rotsForLinksDict[rotation])
         if rotation != cccName and rotation != currRotName:
-            rotUrl = urlGen(urlBase, rotDataListStub, ['Rotation', rotation],
-                ['Milestone', rotsForLinksDict[rotation]], urlSuffix)
+            urlDictRot = urlDict
+            urlDictRot['Rotation'] = rotation
+            urlDictRot['Milestone'] = rotsForLinksDict[rotation]
+            rotUrl = urlBase + '?' + urllib.urlencode(urlDictRot)
             otherRotLinks += '<li><a href ="%s">%s</a></li>\n' % (rotUrl, rotation)
 
 ###################################################################
@@ -315,8 +371,9 @@ try:
     templateFH = open('portalHTMLtemplate.html', 'r')
     htmlTemplate = templateFH.read()
 
-    templateVars = dict(cssSheet=cssSheet, FName=FName, LName=LName,
-                        currRotName=currRotName, currRotUrl=currRotUrl,
+    templateVars = dict(cssSheet=cssSheet, FName=residentD['FName'],
+                        LName=residentD['LName'],
+                        currRotName=currRotName,
                         cccUrl=cccUrl, otherRotLinks=otherRotLinks,
                         currRotHTML=currRotHTML, version=version,
                         ResDirectory=ResDirectory)
@@ -336,10 +393,7 @@ try:
 
     print finalHTML
 
-
 except NameError:
-    cgiError = 1
-
     cgiErrTemplateFH = open('portalCGIerrTemplate.html', 'r')
     cgiErrTemplate = cgiErrTemplateFH.read()
     print "Content-type:text/html\r\n\r\n"
@@ -356,13 +410,11 @@ except NameError:
 
 
 
+"""
+Stored for potential offline use:
+listofListsStore = [['KW&nbsp;Int-Short&nbsp;', 'Guslits-E='], ['KN Call&nbsp;', 'Harper-L'], ['RedBMT-Nite&nbsp;', 'Knappe-A*'], ['PICU-Day&nbsp;', 'Bent-M'], ['PICU Nite&nbsp;', 'Maurer-L'], ['ICN Int-Short&nbsp;', 'Caffarelli-M'], ['ICN Sr-Bridge Long', 'Wu-L*'], ['ICN Sr-Short&nbsp;', 'Truong-B='], ['Pacific Sr-Nite&nbsp;', 'Ort-K'], ['SFO-Int&nbsp;Swing&nbsp;', 'Iacopetti-C'], ['SFO-SCR&nbsp;', 'LaRocca-T='], ['SFO-Sr Day&nbsp;', 'Davenport-J'], ['SFO-Sr Nite&nbsp;', 'FP2: DeMarchis-Emilia'], ['SFN-Int Day&nbsp;', 'FP1: Gomez, Teresa'], ['SFGH-Sr Nite', 'Balkin-E='], ['SFW-Int Day&nbsp;', 'FP1: Cuervo, Catalina'], ['CHO 7a-4p', 'Sofia Kerbawy'], ['CHO&nbsp;3p-12a', 'Armando Huaringa'], ['CHO&nbsp;6p-3a', 'Callie Titcomb'], ['CHO&nbsp;10p-7a', 'UCSF Vaisberg'], ['TCU-Day', 'Hammoudi-T'], ['TCU-ID', 'Vinh-L*'], ['WB', 'Yang-E='], ['KW2&nbsp;', 'Links-B*'], ['BMT&nbsp;', 'Johnson-Kerner-B'], ['PICU-Day', 'Crouch-E='], ['PICU-Day', 'Neely-J'], ['UCW3-Nite&nbsp;', 'Goudy-B='], ['ICN Int-Short', 'Singal-P'], ['ICN Sr-Long&nbsp;', 'Brajkovic-I='], ['ICN Sr-Short&nbsp;', 'Laguna-M'], ['SFO-Int Day', 'EM1: Padrez-Kevin'], ['SFO-Int Nite', 'Spiegel-E'], ['SFO-Sr Day&nbsp;', 'Sundby-T'], ['SFO-Sr Swing&nbsp;', 'FP3: Chang, Steven'], ['SFN Sr Day&nbsp;', 'Thompson-D'], ['SFN-Int Day', 'Nash-D'], ['SFW R2 Day&nbsp;', 'Boddupalli-G'], ['SFGH-Int Nite&nbsp;', 'Wohlford-E'], ['CHO&nbsp;3p-12a', 'Scott Sutton'], ['CHO&nbsp;3p-12a', 'Betty Shum'], ['CHO&nbsp;10p-7a', 'Ruchi Punatar'], ['TCU-Day', 'Kodali-S'], ['TCU-Nite', 'Keller-S='], ['WB', 'Chen-D*'], ['RED', 'Braun-L='], ['PURPLE1-Day', 'Schwartz-R'], ['PURPLE1-Nite&nbsp;', 'Simmons-R'], ['ORANGE1-Day&nbsp;', 'Burnett-H='], ['ORANGE1-Day', 'Argueza-B*'], ['ORANGE3-Day&nbsp;', 'Pantell-M*']]
 
-    """
-    Stored for potential offline use:
-    listofListsStore = [['KW&nbsp;Int-Short&nbsp;', 'Guslits-E='], ['KN Call&nbsp;', 'Harper-L'], ['RedBMT-Nite&nbsp;', 'Knappe-A*'], ['PICU-Day&nbsp;', 'Bent-M'], ['PICU Nite&nbsp;', 'Maurer-L'], ['ICN Int-Short&nbsp;', 'Caffarelli-M'], ['ICN Sr-Bridge Long', 'Wu-L*'], ['ICN Sr-Short&nbsp;', 'Truong-B='], ['Pacific Sr-Nite&nbsp;', 'Ort-K'], ['SFO-Int&nbsp;Swing&nbsp;', 'Iacopetti-C'], ['SFO-SCR&nbsp;', 'LaRocca-T='], ['SFO-Sr Day&nbsp;', 'Davenport-J'], ['SFO-Sr Nite&nbsp;', 'FP2: DeMarchis-Emilia'], ['SFN-Int Day&nbsp;', 'FP1: Gomez, Teresa'], ['SFGH-Sr Nite', 'Balkin-E='], ['SFW-Int Day&nbsp;', 'FP1: Cuervo, Catalina'], ['CHO 7a-4p', 'Sofia Kerbawy'], ['CHO&nbsp;3p-12a', 'Armando Huaringa'], ['CHO&nbsp;6p-3a', 'Callie Titcomb'], ['CHO&nbsp;10p-7a', 'UCSF Vaisberg'], ['TCU-Day', 'Hammoudi-T'], ['TCU-ID', 'Vinh-L*'], ['WB', 'Yang-E='], ['KW2&nbsp;', 'Links-B*'], ['BMT&nbsp;', 'Johnson-Kerner-B'], ['PICU-Day', 'Crouch-E='], ['PICU-Day', 'Neely-J'], ['UCW3-Nite&nbsp;', 'Goudy-B='], ['ICN Int-Short', 'Singal-P'], ['ICN Sr-Long&nbsp;', 'Brajkovic-I='], ['ICN Sr-Short&nbsp;', 'Laguna-M'], ['SFO-Int Day', 'EM1: Padrez-Kevin'], ['SFO-Int Nite', 'Spiegel-E'], ['SFO-Sr Day&nbsp;', 'Sundby-T'], ['SFO-Sr Swing&nbsp;', 'FP3: Chang, Steven'], ['SFN Sr Day&nbsp;', 'Thompson-D'], ['SFN-Int Day', 'Nash-D'], ['SFW R2 Day&nbsp;', 'Boddupalli-G'], ['SFGH-Int Nite&nbsp;', 'Wohlford-E'], ['CHO&nbsp;3p-12a', 'Scott Sutton'], ['CHO&nbsp;3p-12a', 'Betty Shum'], ['CHO&nbsp;10p-7a', 'Ruchi Punatar'], ['TCU-Day', 'Kodali-S'], ['TCU-Nite', 'Keller-S='], ['WB', 'Chen-D*'], ['RED', 'Braun-L='], ['PURPLE1-Day', 'Schwartz-R'], ['PURPLE1-Nite&nbsp;', 'Simmons-R'], ['ORANGE1-Day&nbsp;', 'Burnett-H='], ['ORANGE1-Day', 'Argueza-B*'], ['ORANGE3-Day&nbsp;', 'Pantell-M*']]
-
-    """
-
+"""
 
 
 
@@ -371,4 +423,4 @@ except NameError:
 
 
 
-#End
+
