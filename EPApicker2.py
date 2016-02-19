@@ -53,6 +53,9 @@ qualBase = 'https://ucsf.co1.qualtrics.com/SE/'
 ResDirectory = 'http://www.pediatricly.com/cgi-bin/westValue/ResidentDirectory.py'
 portal = 'http://www.pediatricly.com/cgi-bin/westValue/portal4.py'
 cssSheet = 'http://www.pediatricly.com/westVal/WVmain.css'
+title = 'The EPA Selector'
+frameHTML = 'frame.html'
+mainTemplate = 'EPApickerHTMLtemplate.html'
 """
 The URL into this needs:
 ?Rotation=__&Milestone=__&LName=__&FName=__&pgy=__&qualID=__
@@ -223,16 +226,20 @@ try:
     suggestFinalHTML = Template(suggestTemplate).safe_substitute(
         Rotation=Rotation, suggestEPAurlHTML=suggestEPAurlHTML)
 
-    templateFH = open('EPApickerHTMLtemplate.html', 'r')
-    htmlTemplate = templateFH.read()
-
-    templateVars = dict(cssSheet=cssSheet, linkBack=linkBack, FName=FName,
+    templateVars = dict(linkBack=linkBack, FName=FName,
                         LName=LName, Rotation=Rotation,
                         suggestFinalHTML=suggestFinalHTML,
-                        restEPAurlHTML=restEPAurlHTML, version=version,
+                        restEPAurlHTML=restEPAurlHTML,
                         ResDirectory=ResDirectory)
+    with open(mainTemplate, 'r') as temp:
+        htmlTemp = temp.read()
+        main = Template(htmlTemp).safe_substitute(templateVars)
 
-    finalHTML = Template(htmlTemplate).safe_substitute(templateVars)
+    templateVars = dict(cssSheet=cssSheet, title=title, version=version,
+                        main=main)
+    with open(frameHTML, 'r') as templateFH:
+        htmlTemplate = templateFH.read()
+        finalHTML = Template(htmlTemplate).safe_substitute(templateVars)
 
 # Save for local debugging, not CGI
 # outfile2 =  open("wvHTML/EPApicker_templated.html", 'w')

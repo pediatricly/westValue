@@ -40,7 +40,7 @@ import csv
 import os.path
 from string import Template
 import urllib
-# import os, sys
+# import sys
 
 ###################################################################
 ### Define Globals Before Main try block
@@ -49,6 +49,9 @@ try: version = os.path.basename(__file__)
 except: version = 'ResidentDirectory'
 
 csvIn = 'Resident_Clean.csv'
+title = 'Resident Directory'
+frameHTML = 'frame.html'
+mainTemplate = 'resDirHTMLtemplate.html'
 AmionName = 'AmionName' # csv reader looks for this to find the header row
 # This tolerates a miss-sorted sheet
 LName = 'LName'
@@ -186,13 +189,17 @@ try:
 ###################################################################
 ### Use the string.Template to store custom HTML as a big string
 ###################################################################
-    templateFH = open('resDirHTMLtemplate.html', 'r')
-    htmlTemplate = templateFH.read()
+    main = ''
+    templateVars = dict(links1=links1, links2=links2, links3=links3)
+    with open(mainTemplate, 'r') as temp:
+        htmlTemp = temp.read()
+        main = Template(htmlTemp).safe_substitute(templateVars)
 
-    templateVars = dict(cssSheet=cssSheet, links1=links1, links2=links2,
-                        links3=links3, version=version)
-
-    finalHTML = Template(htmlTemplate).safe_substitute(templateVars)
+    templateVars = dict(cssSheet=cssSheet, title=title, version=version,
+                        main=main)
+    with open(frameHTML, 'r') as templateFH:
+        htmlTemplate = templateFH.read()
+        finalHTML = Template(htmlTemplate).safe_substitute(templateVars)
 
 # Save for local debugging, not CGI
 # outfile2 =  open("wvHTML/cgiPortal_templated.html", 'w')
@@ -214,4 +221,7 @@ except:
     print '<h1>Oops!</h1>'
     print 'Something just went horribly wrong with westValue. <b>Sorry!</b><br>'
     print 'Please let Mike or Marcela know what led up to this screen.'
+    # e = sys.exc_info()
+    # print e
+
 

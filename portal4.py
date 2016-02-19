@@ -85,18 +85,22 @@ import csv
 import os.path
 import urllib
 from string import Template
+# import sys
 
 ###################################################################
 ### Define Globals Before Main try block
 ###################################
 try: version = os.path.basename(__file__)
 except: version = 'portal4'
+print "Content-type:text/html\r\n\r\n"
 
-qualDefault = 'SV_8CwPK9m2RELdyS1'
+qualDefault = 'SV_09y6WMuHi9uelEh'
 
 EPApicker = 'http://www.pediatricly.com/cgi-bin/westValue/EPApicker2.py'
 ResDirectory = 'http://www.pediatricly.com/cgi-bin/westValue/ResidentDirectory.py'
-
+title = 'Rotation Portal'
+frameHTML = 'frame.html'
+mainTemplate = 'portalHTMLtemplate.html'
 fieldnames = ['AmionRot', 'cleanRotName', 'Milestone Map Label']
 residentD = {}
 cccMilestone = 'CCC' # Remembers the milestone group name for continuity clinic
@@ -368,17 +372,22 @@ try:
 ###################################################################
 ### Use the string.Template to store custom HTML as a big string
 ###################################################################
-    templateFH = open('portalHTMLtemplate.html', 'r')
-    htmlTemplate = templateFH.read()
 
-    templateVars = dict(cssSheet=cssSheet, FName=residentD['FName'],
+    main = ''
+    templateVars = dict(FName=residentD['FName'],
                         LName=residentD['LName'],
-                        currRotName=currRotName,
-                        cccUrl=cccUrl, otherRotLinks=otherRotLinks,
-                        currRotHTML=currRotHTML, version=version,
-                        ResDirectory=ResDirectory)
+                        currRotName=currRotName, cccUrl=cccUrl,
+                        otherRotLinks=otherRotLinks,
+                        currRotHTML=currRotHTML, ResDirectory=ResDirectory)
+    with open(mainTemplate, 'r') as temp:
+        htmlTemp = temp.read()
+        main = Template(htmlTemp).safe_substitute(templateVars)
 
-    finalHTML = Template(htmlTemplate).safe_substitute(templateVars)
+    templateVars = dict(title=title, cssSheet=cssSheet, main=main, version=version)
+
+    with open(frameHTML, 'r') as templateFH:
+        htmlTemplate = templateFH.read()
+        finalHTML = Template(htmlTemplate).safe_substitute(templateVars)
 
 # Save for local debugging, not CGI
 # outfile2 =  open("wvHTML/cgiPortal_templated.html", 'w')
@@ -388,7 +397,6 @@ try:
 ### For CGI, print the final templated HTML
 ###################################################################
 
-    print "Content-type:text/html\r\n\r\n"
 # Need this header to start off the html file in CGI (not when saving html)
 
     print finalHTML
@@ -397,6 +405,8 @@ except NameError:
     cgiErrTemplateFH = open('portalCGIerrTemplate.html', 'r')
     cgiErrTemplate = cgiErrTemplateFH.read()
     print "Content-type:text/html\r\n\r\n"
+    e = sys.exc_info()
+    print e
     print Template(cgiErrTemplate).safe_substitute(version=version,
                                                    cssSheet=cssSheet,
                                                    ResDirectory=ResDirectory)

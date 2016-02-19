@@ -1,5 +1,14 @@
 html {
-    background-color: rgb(1, 73, 105);
+    background-color: rgb(225, 236, 245);
+}
+
+body {
+    margin: 0 auto;
+    padding: 2% 3% 4%;
+    max-width: 800px;
+    font-family: sans-serif;
+    color: rgb(0, 0, 0);
+/*    background-color: white;*/
 }
 
 header {
@@ -7,7 +16,11 @@ header {
 }
 
 h1, h2, h3, h4, h5, h6 {
-    color: rgb(255, 250, 240);
+    color: rgb(0, 0, 0);
+    font-family: sans-serif;
+}
+
+h1 {
     font-family: serif;
 }
 
@@ -16,53 +29,127 @@ h3, h4, h5, h6 {
     padding-right: 2%;
 }
 
-img {
-    display: inline;
+#mainIcon {
+/*    display: inline;*/
     float: left;
-    line-height: 263px;
-    vertical-align: middle;
-    min-width: 130px;
+    width: 26%;
+/*    line-height: 263px;*/
+/*    vertical-align: middle;*/
+    min-width: 150px;
+    margin-bottom: 2%;
 }
 
 h1 {
-    height: 263px;
-    display: block;
-/*    line-height: 263px;*/
-    vertical-align: middle;
+/*    height: 163px;*/
+    display: inline-block;
+/*    min-height: 80px; */
+/*    line-height: 63px;*/
+/*    vertical-align: middle;*/
 /*    float: right;*/
     }
 
-body {
-    margin: 0 auto;
-    padding: 1em 2em 4em;
-    max-width: 800px;
-    font-family: sans-serif;
-    color: rgb(252, 177, 93);
-}
 
-/*.intro {*/
-/*    text-align: center;*/
-/*}*/
 
-details {
-    clear: left;
-    inline-block;
-    padding-left: 5%;
-    padding-right: 5%;
+
+/* The NavBar */
+
+nav {
+    display: inline-block;
+    width: 100%;
+    margin-bottom: 1%;
+/*    padding: 2%;*/
     border: 1px solid white;
+    background: rgb(184, 190, 211);
+    border-radius: 10px;
+    border: 1px solid #69696a;
+/*    height: 60px;*/
+    }
+nav ul{
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    height: inherit;
+    
 }
 
-details p {
+nav li {
+/*    line-height: 25px;*/
+    display: block;
+/*
+    justify-content: center;
+    align-items: center;
+*/
+    width: 24.8%;
+    max-width: 150px;
+    float: left;
+    height: inherit;
+    font-size: 23px;
+/*    line-height: 35px;*/
+/*    border: 1px solid white*/
+    height: 52px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+  }
+
+nav li a{
+    display: inline-block;
+    width: 100%;
+    height: inherit;
+/*    background: rgb(49, 57, 78);*/
+  /*    color: rgb(1, 73, 105);*/
+}
+
+.inactive{
+/* background: black;*/
+    color: black;
+}
+
+
+
+/* The Details / Summary Boxes in the Header */
+
+header details {
+    font-size: 18px;
+    clear: both;
+/*    clear: left;*/
+    display: block;
+    padding-left: 3%;
+    padding-right: 3%;
+/*    border: 1px solid white;*/
+    padding-top: 0.25%;
+    padding-bottom: 0.25%;
+    margin-top: 0.25%;
+    margin-bottom: 0.25%;
+}
+
+header details p {
     padding-left: 1.5em;
     text-indent: -1.5em;
     text-align: left;
+    font-size: 16px;
+/*    line-height: 20px;*/
 }
 
-summary {
+header details ul, ol {
     font-weight: bold;
+/*    text-decoration: underline;*/
+    text-align: left;
+    line-height: 160%;
 }
 
-main, details {
+header details ul ul {
+/*    line-height: 20px;*/
+    font-weight: normal;
+    text-decoration: none;
+    font-size: 15px;
+}
+/*Put summary below details so it inherits details stuff but overrides it.*/
+header summary {
+    font-weight: bold;
+    font-size: 18px;
+}
+
+main {
     font-size: 18px;
 }
 
@@ -74,7 +161,8 @@ main p {
 
 strong {
     color: rgb(221, 29, 67);
-    font-size: 150%;
+    font-weight: bold;
+/*    font-size: 150%;*/
 }
 
 #namelist {
@@ -98,26 +186,31 @@ strong {
 
 .pgyClass h2 {
     text-align: center;
-    color: rgb(255, 140, 0);
+/*    color: rgb(0, 0, 0);*/
 }
 
 ol, ul {
-    line-height: 185%;
+    line-height: 155%;
     margin-left: 3%;
     margin-right: 3%;
+/*    padding-top: 0%;*/
 }
 
 #namelist li {
 /*    padding: 2%;*/
 }
 
+#otherRotations ul {
+    line-height: 185%;
+}
+
 a {
-    color: rgb(255, 235, 205);
+    color: rgb(177, 134, 55);
     text-decoration: none;
 }
 
 a:hover {
-    background: grey;
+    background: rgb(171, 201, 242);
 }
 
 footer {
@@ -128,25 +221,39 @@ footer {
 }
 
 /* Small screen take over */
-@media only screen and (max-width: 650px) {
+@media only screen 
+    and (max-device-width : 736px) 
+/*736px catches everything up to the iPhone 6 Plus*/
+/*For reasons I don't understand yet, using max-width works when you shrink a browser window but not on the iPhone*/
+{
     body {
         padding: inherit;
 /*        background: black;*/
-        font-size: 18px;
+/*        font-size: 60px;*/
+        font-size: 380%;
     }
     
+    h1 {
+        font-size: 120%;
+        }
+        
     details {
         display: none;
 /*        visibility: hidden;*/
     }
     
+    main {
+        font-size: inherit;
+    }
+    
     p {
         padding: inherit;
+/*        font-size: inherit; */
     }
     
     ol, ul {
         margin: inherit;
-        
+        font-size: inherit;
     }
     
     .pgyClass {
@@ -158,6 +265,6 @@ footer {
         padding: 1%;
     }
     footer {
-        font-size: 80%;
+        font-size: 70%;
     }
 }
