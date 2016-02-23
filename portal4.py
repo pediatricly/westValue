@@ -303,8 +303,10 @@ try:
         fullTable1 = re.findall("^<TR><td>([\w\s&-;]+?)<.*<nobr>(.*)</b></a>", html, re.M)
         fullTable2 = re.findall("^<TR class=grbg><td>([\w\s&-;]+?)<.*<nobr>(.*)</b></a>", html, re.M)
         fullTable3 = re.findall("^<TR><td></font><font color=#\w\w\w\w\w\w>([\w\s&-;]+?)<.*<nobr>(.*)</b></a>", html, re.M)
+        tar4 ="^<TR class=grbg><td></font><font color=#\w\w\w\w\w\w>([\w\s&-;]+?)<.*<nobr>(.*)</b></a>"
+        fullTable4 = re.findall(tar4, html, re.M)
 
-        listofTables = [fullTable1, fullTable2, fullTable3]
+        listofTables = [fullTable1, fullTable2, fullTable3, fullTable4]
         for subTable in listofTables:
             for rotation, resident in subTable:
                 rotation = re.sub(r'&nbsp;', '', rotation)
