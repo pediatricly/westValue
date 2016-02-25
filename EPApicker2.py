@@ -28,7 +28,7 @@ back to v2 to spare the links.)
 import cgi, cgitb
 # Debugging - has the webserver print a traceback instead of just a page
 # not found error if there's an error in the code
-cgitb.enable()
+# cgitb.enable()
 
 # cgi.escape() I think this is a security feature to keep people from
 # entering code into input fields
